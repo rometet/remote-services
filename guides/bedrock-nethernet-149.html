@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Minecraft BedrockサーバーでUnsupported Transport / Error 149が出る場合の対処。BDS 26.60以降、NetherNet、TCP 19132、UDPポートとNATの設定を公式ドキュメントに沿って解説。">
+<title>BDS 26.60「Unsupported Transport / Error 149」NetherNet移行の解決方法 | rometet.dev</title>
+<style>
+:root{--ink:#1b3350;--nav:#102746;--sub:#567;--link:#2462ba}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Yu Gothic",Meiryo,sans-serif;background:#f5f8fc}
+header{background:var(--nav);color:#fff;padding:15px 22px}header a{color:#fff;text-decoration:none}
+main{max-width:900px;margin:0 auto;padding:35px 22px 90px}h1{font-size:clamp(25px,5vw,42px);line-height:1.4}h2{margin-top:40px;font-size:24px}h3{font-size:18px}
+.box{padding:20px;border-radius:13px;background:#fff;border:1px solid #d8e3f0;margin:18px 0}
+p,li{margin-bottom:12px}a{color:var(--link)}code,pre{background:#eaf1fa;border-radius:4px;padding:1px 5px}pre{padding:16px;overflow-x:auto;font-size:14px}
+.warning{border-left:4px solid #ce8c33;padding-left:16px}.button{background:#235fb2;display:inline-block;padding:10px 18px;border-radius:8px;text-decoration:none;color:white;font-weight:bold;margin:7px 0}
+small{color:var(--sub)}
+</style>
+<link rel="canonical" href="https://rometet.github.io/remote-services/guides/bedrock-nethernet-149.html">
+<meta property="og:title" content="Bedrock Error 149の対処｜NetherNet移行とBDS 26.60">
+<meta property="og:description" content="BDS接続エラーの確認手順とserver.properties設定例。非公式ガイド。">
+</head><body><header><a href="../index.html">rometet.dev</a> / BDS troubleshooting</header><main>
+<small>2026年11月13日更新 · 非公式・Minecraft公式ヘルプへのリンクあり</small>
+<h1>Bedrockサーバーの「Unsupported Transport / Error 149」の直し方</h1>
+<p>Minecraft Bedrock Dedicated Server（BDS）で接続時に <strong>Unsupported Transport / Error 149</strong> が発生する場合、2026年10月29日からのネットワーク移行が関係している可能性があります。Microsoft/Minecraft公式案内によれば、従来のRakNetからNetherNetへの変更が始まりました。</p>
+<div class="box"><strong>まず確認すること</strong><ol>
+<li>サーバーを <strong>BDS 26.60以降</strong>に更新する。ワールドと設定は更新前にバックアップする</li>
+<li><code>server.properties</code> に <code>transport=nethernet</code> を設定する</li>
+<li><code>server-port=19132</code> を確認し、ルーターからサーバーへの <strong>TCP 19132</strong> の転送と、ホストの受信TCPルールを確認する</li>
+<li>UDPの<strong>送信と戻りの通信</strong>をファイアウォールとルーターが許可しているか確認する</li>
+<li>サーバーを安全に停止・再起動し、別回線から接続テストする</li>
+</ol></div>
+<a class="button" href="../tools/bedrock-properties.html">server.propertiesを無料で編集する</a>
+<h2>1. 現在のサーバーバージョンを確認</h2>
+<p>新しいクライアントを使用している場合、古いBDSでは接続互換性がありません。BDSを停止して、<code>worlds</code>、<code>server.properties</code>、<code>allowlist.json</code>、<code>permissions.json</code>、<code>keys</code> を含めてバックアップしてください。その後、公式配布元から対応するBDSの最新版を取得します。既存ワールドを新しい形式に更新した後のダウングレードは避けます。</p>
+<p><a href="https://www.minecraft.net/en-us/download/server/bedrock" target="_blank" rel="noopener noreferrer">Minecraft公式BDSダウンロード</a></p>
+<h2>2. server.properties のNetherNet設定</h2>
+<p>次の例は一般的な接続に関連する箇所です。既存ファイルの他の設定を丸ごと上書きしないでください。</p>
+<pre>transport=nethernet
+server-port=19132
+online-mode=true</pre>
+<p><code>server-ip</code> は特定のネットワークインターフェイスに固定する必要がないなら空欄にしておきます。インターネット公開時は <code>online-mode=true</code> を維持してください。</p>
+<h2>3. TCPとUDPの違いに注意</h2>
+<p>公式手順は、通常の家庭内ネットワーク向けに <strong>TCP 19132</strong> のポート転送、サーバーPCのTCP受信ルール、そしてUDP送信・戻り通信の許可を案内しています。NetherNetではUDPゲーム通信にOSが選ぶ動的ポートを利用できるため、すべての環境で固定UDPレンジの転送が必要なわけではありません。</p>
+<p>厳格なNATやファイアウォール環境でUDPポートを明示的に管理したい場合だけ、公式ドキュメントに従い <code>server-udp-ports</code> を設定し、ホストとルーター両方の設定を一致させてください。</p>
+<pre># UDPポート固定が本当に必要な場合の例
+server-udp-ports=49152-49200</pre>
+<p class="warning">外部へポートを開放するとホストがインターネットからアクセス可能になります。必要最小限の公開にとどめ、OS/BDSを更新し、許可リストや認証を利用してください。</p>
+<h2>4. まだつながらない場合の切り分け</h2>
+<p>同じLAN内で接続できるが外部回線からだけ失敗する場合は、ルーターの転送先IP、二重NAT、CGNAT、ISPの制限を確認します。LAN内ですらつながらない場合は、BDSの起動ログ、正しいホストIP、クライアントとBDSのバージョン、Windows/Linuxのファイアウォール設定を確認します。</p>
+<p>コンソール端末からの接続では、ゲーム機側がカスタムサーバー追加機能を表示していない場合があります。Microsoftのサポート対象外の接続回避策を前提にはしません。</p>
+<h2>設定ファイルを自分で編集する</h2>
+<div class="box"><h3>無料BDS設定エディター</h3>
+<p>既存の<code>server.properties</code>をブラウザ内で読み込んで設定を変更できます。入力内容はサーバーへアップロードせず、ファイルとして保存できます。</p>
+<a class="button" href="../tools/bedrock-properties.html">設定エディターを開く</a></div>
+<h2>自分で直せない場合</h2>
+<div class="box"><h3>BDS移行・接続トラブル調査（有償）</h3>
+<p>環境ごとの起動ログ、ネットワーク設定、BDSとクライアントのバージョンを整理して再現・原因調査を行います。基本構築の参考料金は6,000円〜。調査範囲と価格は事前合意、修正可能かは環境によります。</p>
+<a class="button" href="https://github.com/rometet/remote-services/issues/new?title=BDS%2026.60%20NetherNet%20support%20request&body=BDS%20version%3A%0AOS%3A%0AIssue%3A%0ATesting%20done%3A%0ABudget%3A">無料見積りを相談する</a>
+<p><small>GitHub Issueは一般公開されます。住所、パスワード、固定IP、トークンなどの秘密情報は投稿しないでください。</small></p></div>
+<h2>参照資料</h2><p><a href="https://help.minecraft.net/hc/en-us/articles/49914677714957">Minecraft Help: How to Set Up a Minecraft: Bedrock Edition Server</a>。NetherNet移行、BDS 26.60、TCP/UDP、固定UDPレンジに関する公式の一次情報です。</p>
+<p><small>本サイトはMojang/Microsoftの公式・提携サイトではありません。</small></p>
+</main></body></html>
