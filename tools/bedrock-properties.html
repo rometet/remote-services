@@ -76,7 +76,7 @@ function render(){
   let el;
   if(type==="select"||type==="bool"){
    el=document.createElement("select");
-   const values=type==="bool"?["true","false"]:hint.split("|").filter(s=>!s.includes("（"));
+   const values=type==="bool"?["true","false"]:hint.split("|").map(s=>s.split("（")[0]);
    for(const value of values){const o=document.createElement("option");o.value=value;o.textContent=value;el.append(o);}
   }else{el=document.createElement("input");el.type="text";if(type==="int")el.inputMode="numeric";}
   el.id="f_"+key;el.value=def;el.addEventListener("change",()=>{try{generate();}catch{}});
