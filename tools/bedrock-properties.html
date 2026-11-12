@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minecraft Bedrock server.properties 設定エディター（NetherNet対応） | rometet.dev</title>
+<meta name="description" content="Minecraft Bedrock Dedicated Serverのserver.propertiesをブラウザで安全に編集・生成。26.60以降のNetherNet移行設定、ポート、描画距離などをチェック。アップロードなし。">
+<style>
+:root{color-scheme:light;--nav:#112747;--blue:#2563c8;--ink:#17304c;--muted:#586b80;--line:#d5e0ed}
+*{box-sizing:border-box}body{margin:0;background:#f2f6fb;color:var(--ink);font:15px/1.65 system-ui,-apple-system,"Yu Gothic",Meiryo,sans-serif}
+a{color:var(--blue)}header{background:var(--nav);color:white;padding:17px 20px}header a{color:white;text-decoration:none;font-weight:750}
+main{max-width:1100px;margin:auto;padding:28px 18px 90px}h1{font-size:clamp(25px,4.2vw,39px);line-height:1.25;margin:10px 0}h2{font-size:21px}p{margin:8px 0 14px}small,.sub{color:var(--muted)}
+.card{background:#fff;padding:24px;border:1px solid var(--line);border-radius:15px;margin:18px 0;box-shadow:0 8px 30px #1834520b}.notice{border-left:4px solid #e3ad4d;padding:12px 16px;background:#fff8e8}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field{display:flex;flex-direction:column;gap:4px;margin:5px 0}
+label{font-weight:700;font-size:13px}input,select,textarea{font:inherit;width:100%;padding:9px 12px;border:1px solid #acbdd1;border-radius:7px;background:#fff;color:#153049}
+input:focus,select:focus,textarea:focus{outline:3px solid #b6d8ff}input[type=file]{padding:9px}
+.note{font-size:12px;color:#617389}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+button,.cta{border:0;border-radius:8px;background:var(--blue);color:white;padding:11px 17px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+button.secondary{background:#e7edf7;color:#193e71}button:hover,.cta:hover{filter:brightness(.92)}textarea{font-family:ui-monospace,Consolas,monospace;min-height:300px;resize:vertical;font-size:13px;line-height:1.55}
+#status{min-height:24px;font-weight:700}#status.error{color:#aa3030}#status.ok{color:#08735d}
+footer{font-size:12px;color:#596b80;text-align:center;margin-top:30px}
+@media(max-width:690px){.cols{grid-template-columns:1fr}.card{padding:17px}}
+</style></head>
+<body><header><a href="../index.html">rometet.dev</a> / BDS configuration editor</header>
+<main><p class="sub">FREE TOOL · ローカル処理 · 日本語 / English</p>
+<h1>Bedrock <code>server.properties</code> エディター</h1>
+<p>設定を選ぶだけで Minecraft Bedrock Dedicated Server の設定ファイルを生成。既存ファイルを読み込んで変更することもできます。<strong>読み込んだ内容はサーバーに送信されません。</strong></p>
+<p class="notice"><strong>26.60以降の接続対策：</strong>Microsoft公式案内ではNetherNet移行に伴い <code>transport=nethernet</code>、BDS 26.60以降、TCP・UDP 19132の開放を案内しています。お使いのBDSのバージョンに合う設定を利用してください。</p>
+<div class="card"><h2>1. 既存設定を読み込む（任意）</h2><input id="upload" type="file" accept=".properties,.txt,text/plain"><p class="note">未対応の項目やコメントは、できるだけそのまま保持します。編集前のファイルは必ずバックアップしてください。</p></div>
+<div class="card"><h2>2. 設定を編集</h2><div class="cols" id="fields"></div></div>
+<div class="card"><h2>3. 確認・保存</h2><div class="actions">
+<button type="button" id="generate">内容を更新</button>
+<button type="button" class="secondary" id="copy">テキストをコピー</button>
+<button type="button" class="secondary" id="download">server.properties を保存</button>
+<button type="button" class="secondary" id="reset">標準設定に戻す</button></div>
+<p id="status" role="status" aria-live="polite"></p><label for="output">生成したファイルの内容</label><textarea id="output" spellcheck="false"></textarea>
+<p class="note">保存後はBDSを停止して <code>server.properties</code> をバックアップ・差し替えし、再起動してください。既存ワールドの設定には反映されない項目があります。</p></div>
+<div class="card"><h2>サーバーの構築・移行で困ったら</h2>
+<p>BDS 26.60以降の接続トラブル、Windows/Linuxのサーバー構築、Discord連携、LeviLamina周辺の原因調査などを個別に対応します。基本構築の参考価格は6,000円〜。作業開始前に範囲と料金を合意します。</p>
+<a class="cta" href="https://github.com/rometet/remote-services/issues/new?title=BDS%20setup%20or%20NetherNet%20migration%20request&body=BDS%20version%3A%0AOS%3A%0AIssue%20description%3A%0ABudget%3A">GitHubから相談（無料見積り）</a>
+<p class="note">相談内容は公開されます。IPアドレス、認証情報、秘密鍵などは書かないでください。</p></div>
+<p class="sub">参考：<a href="https://help.minecraft.net/hc/en-us/articles/49914677714957" target="_blank" rel="noopener noreferrer">Minecraft公式 BDSセットアップ</a> · <a href="https://learn.microsoft.com/en-us/minecraft/creator/documents/bedrockserver/server-properties" target="_blank" rel="noopener noreferrer">Microsoft設定一覧</a>。本ツールは非公式で、Microsoft/Mojangとは無関係です。</p>
+</main><footer>© 2026 rometet · Independent tooling for Minecraft Bedrock server operators</footer>
+<script>
+"use strict";
+const specs=[
+["server-name","サーバー名 / Server name","text","Dedicated Server","セミコロンは使用不可"],
+["gamemode","ゲームモード / Game mode","select","survival","survival|creative|adventure"],
+["difficulty","難易度 / Difficulty","select","easy","peaceful|easy|normal|hard"],
+["force-gamemode","ゲームモードの強制 / Force gamemode","bool","false","既存ワールドへの適用に注意"],
+["allow-cheats","チート許可 / Allow cheats","bool","false","実績への影響に注意"],
+["max-players","最大人数 / Max players","int","10","1～100000"],
+["online-mode","オンライン認証 / Online mode","bool","true","インターネット公開時は true を推奨"],
+["allow-list","許可リスト / Allow list","bool","false","allowlist.json を別途設定"],
+["server-port","接続ポート / Server port","int","19132","1～65535"],
+["server-portv6","IPv6接続ポート / IPv6 port","int","19133","1～65535"],
+["enable-lan-visibility","LANでの発見 / LAN visibility","bool","true","独自ポートとの競合に注意"],
+["view-distance","描画距離 / View distance","int","32","5以上、高いほど負荷増"],
+["tick-distance","Tick距離 / Tick distance","int","4","4～12、高いほど負荷増"],
+["player-idle-timeout","AFK退出時間（分） / Idle timeout","int","30","0で無制限"],
+["max-threads","最大スレッド数 / Max threads","int","8","0で自動"],
+["level-name","ワールド名 / World name","text","Bedrock level","既存worldsフォルダ名と一致させる"],
+["level-seed","シード / Seed","text","","新規ワールド作成時に使う"],
+["default-player-permission-level","初期権限 / Default permission","select","member","visitor|member|operator"],
+["texturepack-required","テクスチャパック必須 / Texture packs required","bool","false",""],
+["transport","通信方式 / Transport","select","nethernet","nethernet|raknet（RakNetは旧バージョン向け）"]
+];
+const $=id=>document.getElementById(id), root=$("fields"), status=$("status");
+const byKey=new Map(specs.map(s=>[s[0],s]));
+let original=null;
+function message(t,err){status.textContent=t;status.className=err?"error":"ok";}
+function render(){
+ root.textContent="";
+ for(const [key,label,type,def,hint] of specs){
+  const box=document.createElement("div");box.className="field";
+  const l=document.createElement("label");l.htmlFor="f_"+key;l.textContent=label;box.append(l);
+  let el;
+  if(type==="select"||type==="bool"){
+   el=document.createElement("select");
+   const values=type==="bool"?["true","false"]:hint.split("|").map(s=>s.split("（")[0]);
+   for(const value of values){const o=document.createElement("option");o.value=value;o.textContent=value;el.append(o);}
+  }else{el=document.createElement("input");el.type="text";if(type==="int")el.inputMode="numeric";}
+  el.id="f_"+key;el.value=def;el.addEventListener("change",()=>{try{generate();}catch{}});
+  box.append(el);
+  const h=document.createElement("span");h.className="note";h.textContent=hint;box.append(h);root.append(box);
+ }
+}
+function validate(key,value){
+ const s=byKey.get(key);if(!s)return;
+ if(s[2]==="int"){
+  if(!/^\d+$/.test(value))throw Error(key+" は整数で指定してください");
+  const n=Number(value);if(!Number.isSafeInteger(n))throw Error(key+" の数値が大きすぎます");
+  const limits={"max-players":[1,100000],"server-port":[1,65535],"server-portv6":[1,65535],"view-distance":[5,999],"tick-distance":[4,12],"player-idle-timeout":[0,100000],"max-threads":[0,1024]};
+  const [lo,hi]=limits[key]||[0,100000];
+  if(n<lo||n>hi)throw Error(key+" は "+lo+"～"+hi+" の範囲で入力してください");
+ }
+ if(key==="server-name"&&value.includes(";"))throw Error("サーバー名に ; は使用できません");
+ if(key==="level-name"&&(/[\\/:*?"<>|]/.test(value)||!value.trim()))throw Error("ワールド名にファイル名として不正な文字があります");
+ if(/[\r\n]/.test(value))throw Error(key+" に改行は使用できません");
+}
+function values(){
+ const out=new Map();
+ for(const [key] of specs){const val=$("f_"+key).value.trim();validate(key,val);out.set(key,val);}
+ return out;
+}
+function generate(){
+ try{
+  const val=values(), seen=new Set();
+  const lines=original===null?[]:original.map(line=>{
+    const m=line.match(/^(\s*)([A-Za-z0-9_-]+)(\s*=\s*)(.*)$/);
+    if(!m||!val.has(m[2]))return line;
+    const key=m[2];seen.add(key);
+    return m[1]+key+m[3]+val.get(key);
+  });
+  for(const [key,v] of val){if(!seen.has(key))lines.push(key+"="+v);}
+  $("output").value=lines.join("\n").replace(/\n*$/,"")+"\n";
+  if(val.get("online-mode")==="false")message("注意：online-mode=false は公開サーバーでは非推奨です。",true);
+  else message("設定内容を生成しました。ブラウザ内でのみ処理しています。",false);
+  return true;
+ }catch(e){message(e.message,true);return false;}
+}
+$("upload").addEventListener("change",async ev=>{
+ const f=ev.target.files&&ev.target.files[0];if(!f)return;
+ if(f.size>1024*1024){message("1 MB以下の設定ファイルを選んでください。",true);return;}
+ const txt=await f.text();original=txt.replace(/\r\n/g,"\n").split("\n");
+ for(const line of original){const m=line.match(/^\s*([A-Za-z0-9_-]+)\s*=\s*(.*?)\s*$/);if(m&&byKey.has(m[1])){const el=$("f_"+m[1]);if(el.tagName==="SELECT"&&!Array.from(el.options).some(x=>x.value===m[2]))continue;el.value=m[2];}}
+ generate();
+});
+$("generate").addEventListener("click",generate);
+$("reset").addEventListener("click",()=>{original=null;$("upload").value="";for(const s of specs)$("f_"+s[0]).value=s[3];generate();});
+$("copy").addEventListener("click",async()=>{
+ if(!generate())return;
+ try{await navigator.clipboard.writeText($("output").value);message("コピーしました。",false)}
+ catch{message("コピーできませんでした。テキスト欄から手動でコピーしてください。",true);}
+});
+$("download").addEventListener("click",()=>{
+ if(!generate())return;
+ const blob=new Blob([$("output").value],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob), a=document.createElement("a");a.href=url;a.download="server.properties";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+render();generate();
+</script></body></html>
