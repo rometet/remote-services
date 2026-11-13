@@ -101,7 +101,7 @@ button.setAttribute('aria-label','Row '+(Math.floor(i/N)+1)+', column '+(i%N+1)+
 button.setAttribute('aria-pressed',live.has(i)?'true':'false');button.innerHTML=segments(i,live.has(i));button.addEventListener('click',rotateClick);button.disabled=win;root.appendChild(button)}
 el('moves').textContent=String(moves);el('flow').textContent=live.size+' / '+(N*N);el('streak').textContent=String(streak());
 el('hint').disabled=win;el('share').disabled=false;
-if(live.has(T)&&!win){win=true;var sec=Math.max(1,Math.round((Date.now()-started)/1000));var s=currentStreak();
+if(live.has(T)&&!win){win=true;el('hint').disabled=true;root.querySelectorAll('.tile').forEach(function(t){t.disabled=true});var sec=Math.max(1,Math.round((Date.now()-started)/1000));var s=currentStreak();
 el('status').className='message win';el('status').textContent='⚡ Circuit completed in '+moves+' rotations ('+hints+' hints). '+sec+'s. Streak: '+s+' day'+(s===1?'':'s')+'!';persist();
 }else if(!win){el('status').className='message';el('status').textContent='Only connected wires carry power. Find the shortest route and light up the EXIT.'}
 }
