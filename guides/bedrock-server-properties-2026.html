@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>統合版BDS server.properties設定ガイド｜ポート・軽量化・権限・ホワイトリスト（2026）</title>
+<meta name="description" content="Minecraft Bedrock Dedicated Server（BDS）のserver.propertiesを日本語で解説。オンライン認証、allow-list、ポート19132/19133、tick-distance、ワールド設定の注意点と無料生成ツール。">
+<link rel="canonical" href="https://rometet.github.io/remote-services/guides/bedrock-server-properties-2026.html">
+<meta property="og:type" content="article"><meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="Minecraft統合版BDSのserver.properties設定ガイド（2026）">
+<meta property="og:description" content="必須設定・安全な公開・軽量化・接続トラブルを日本語で確認。無料設定エディターあり。">
+<meta property="og:url" content="https://rometet.github.io/remote-services/guides/bedrock-server-properties-2026.html">
+<style>
+:root{color-scheme:light;--ink:#172b45;--nav:#102746;--blue:#2263c8;--muted:#53647b;--line:#dce5f0;--bg:#f3f7fd}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Yu Gothic",Meiryo,sans-serif;background:#fff}a{color:var(--blue)}a:focus-visible{outline:3px solid #f0a640;outline-offset:3px}
+header{background:var(--nav);color:#fff}.nav{max-width:980px;margin:auto;padding:18px 22px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}.nav a{color:#fff;text-decoration:none}.brand{font-size:20px;font-weight:800}
+main{max-width:980px;margin:auto;padding:26px 22px 66px}article{max-width:830px}.eyebrow{font-size:13px;font-weight:800;color:#3565a5;letter-spacing:.08em}h1{font-size:clamp(27px,5vw,42px);line-height:1.3;margin:14px 0}h2{font-size:26px;line-height:1.4;margin:45px 0 12px;border-bottom:1px solid var(--line);padding-bottom:10px}h3{font-size:20px;margin:24px 0 8px}p,li{max-width:780px}.lede{font-size:18px;color:#455a73}.meta,.small{color:var(--muted);font-size:13px}.toc{background:var(--bg);border-radius:14px;padding:17px 24px;margin:30px 0}.toc ul{columns:2;list-style-type:disc;gap:25px}
+.note{border-left:4px solid #d79b2d;background:#fff9ed;padding:12px 16px;border-radius:6px;margin:24px 0}.safe{border-left:4px solid #288473;background:#effaf6;padding:13px 16px;border-radius:6px;margin:24px 0}.cta{display:inline-block;background:#2263c8;color:white;text-decoration:none;font-weight:700;border-radius:10px;padding:12px 20px;margin:10px 10px 10px 0}.cta.secondary{background:#e7eefb;color:#164b98}
+table{width:100%;border-collapse:collapse;margin:18px 0;display:block;overflow:auto}th,td{padding:12px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--bg)}code{background:#eff3f9;padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}pre{white-space:pre-wrap;word-break:break-word;background:#112540;color:#f5faff;border-radius:10px;padding:18px}pre code{background:none;color:inherit;padding:0}footer{background:var(--nav);color:#dae7f7;padding:25px 22px;font-size:13px}footer a{color:white}.footer-inner{max-width:980px;margin:auto}
+@media(max-width:600px){.toc ul{columns:1}main{padding:20px 16px 48px}h2{font-size:23px}th,td{font-size:13px;padding:9px}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"統合版BDS server.properties設定ガイド（2026）","inLanguage":"ja","datePublished":"2026-11-15","dateModified":"2026-11-15","author":{"@type":"Organization","name":"rometet"},"mainEntityOfPage":"https://rometet.github.io/remote-services/guides/bedrock-server-properties-2026.html","isAccessibleForFree":true}</script>
+</head>
+<body>
+<header><nav class="nav" aria-label="サイトメニュー"><a class="brand" href="../index.html">rometet.dev</a><span><a href="../tools/bedrock-properties.html">無料BDS設定ツール</a>　｜　<a href="../fixed-price-services.html">有料サポート</a></span></nav></header>
+<main><article>
+<p class="eyebrow">BEDROCK DEDICATED SERVER · 日本語ガイド</p>
+<h1>Minecraft統合版BDS「server.properties」設定ガイド</h1>
+<p class="lede">サーバーを建てた後、何を変更すればいい？　友達限定・一般公開・低スペック環境向けに、重要な設定と事故を防ぐポイントを整理しました。2026年11月時点の解説です。</p>
+<p class="meta">最終更新：2026年11月15日　|　所要時間：約7分　|　対象：Bedrock Dedicated Serverを自分で管理する方向け</p>
+<div class="safe"><strong>設定ファイルを作るだけなら無料でできます。</strong> ブラウザで既存ファイルを読み込んで編集・保存でき、入力は外部サーバーに送信されません。<div><a class="cta" href="../tools/bedrock-properties.html">無料server.propertiesエディターを使う</a></div></div>
+<nav class="toc" aria-label="目次"><strong>目次</strong><ul><li><a href="#where">ファイルの場所と変更手順</a></li><li><a href="#basic">まず見るべき設定</a></li><li><a href="#friends">友達限定の安全な設定</a></li><li><a href="#performance">重さ・TPSの調整</a></li><li><a href="#network">ポートと接続トラブル</a></li><li><a href="#permissions">allowlist・権限の管理</a></li><li><a href="#pitfalls">よくある失敗</a></li><li><a href="#support">設定支援・参考資料</a></li></ul></nav>
+<section id="where"><h2>1. server.propertiesとは？　どこにある？</h2>
+<p><code>server.properties</code> はBDSの起動フォルダーにある、<code>名前=値</code>のテキスト設定ファイルです。先頭の<code>#</code>はコメントです。サーバー名、ゲームモード、最大人数、接続用ポートなどを指定できます。</p>
+<p>編集前にBDSを停止し、元ファイルのバックアップを残してください。メモ帳などのテキストエディターで編集し、設定を保存してからBDSを再起動します。ワールド作成時に保存される項目は、既存ワールドへ後から反映されない場合があります。</p>
+<pre><code># 例：実際の環境に合わせて編集
+server-name=Friends Bedrock
+gamemode=survival
+difficulty=normal
+online-mode=true
+allow-list=true
+max-players=8
+server-port=19132
+view-distance=16
+tick-distance=4</code></pre>
+<p class="small">これは代表的な項目のみを抜粋した例です。既存ファイル内のその他の設定を削除せず、BDSのバージョンに合った書式を使ってください。</p></section>
+<section id="basic"><h2>2. 最初に見るべき設定</h2>
+<table><thead><tr><th>項目</th><th>意味・注意点</th></tr></thead><tbody>
+<tr><td><code>server-name</code></td><td>サーバー名。セミコロンは使えません。</td></tr>
+<tr><td><code>gamemode</code> / <code>difficulty</code></td><td>新規プレイヤー向けゲームモード、難易度。既存ワールドに対しては<code>force-gamemode</code>との関係に注意。</td></tr>
+<tr><td><code>online-mode=true</code></td><td>公開サーバーでは有効を推奨。Xbox Live認証に関係します。</td></tr>
+<tr><td><code>allow-list=true</code></td><td><code>allowlist.json</code>に登録したプレイヤーへ参加を制限します。</td></tr>
+<tr><td><code>max-players</code></td><td>同時参加人数の上限。大きくすれば処理負荷も上がります。</td></tr>
+<tr><td><code>server-port</code> / <code>server-portv6</code></td><td>既定ではIPv4が19132、IPv6が19133。実際のネットワーク設定と一致させます。</td></tr>
+<tr><td><code>level-name</code></td><td>読み込むワールド名。<code>worlds/</code>フォルダー名との不一致に注意。</td></tr>
+<tr><td><code>default-player-permission-level</code></td><td>新規プレイヤーの権限。初期値は<code>member</code>です。</td></tr>
+</tbody></table>
+<p>公式ドキュメントには、これ以外にもスクリプト、デバッグ、ネットワーク、ウォッチドッグの設定があります。値の制限は必ず使用中のBDSに同梱されたファイルと<a href="https://learn.microsoft.com/en-us/minecraft/creator/documents/bedrockserver/server-properties?view=minecraft-bedrock-stable" target="_blank" rel="noopener noreferrer">Microsoft公式設定一覧</a>を照合してください。</p></section>
+<section id="friends"><h2>3. 友達限定サーバーの設定例</h2>
+<p>少人数のプライベートサーバーなら、次の組み合わせを出発点にできます。</p>
+<pre><code>online-mode=true
+allow-list=true
+max-players=8
+default-player-permission-level=member
+allow-cheats=false</code></pre>
+<p><code>allow-list=true</code> だけでは参加者は登録されません。別ファイルの <code>allowlist.json</code> を用意し、現在のプレイヤー情報に合わせて管理してください。管理者権限を全員に付ける必要はありません。</p>
+<div class="note"><strong>注意：</strong>ワールドの安全性はこの5行だけで保証されません。ファイアウォール、公開するポート、管理者権限、バックアップも確認してください。</div></section>
+<section id="performance"><h2>4. BDSが重いときの設定</h2>
+<p>まずは<code>view-distance</code>（表示範囲）と<code>tick-distance</code>（シミュレーションする範囲）、最大人数を確認します。</p>
+<table><thead><tr><th>設定</th><th>公式の許容範囲</th><th>実用上の考え方</th></tr></thead><tbody>
+<tr><td><code>view-distance</code></td><td>5以上の整数</td><td>大きいほどチャンク処理の負荷が増えます。最初は控えめにして実測で調整。</td></tr>
+<tr><td><code>tick-distance</code></td><td>4〜12の整数</td><td>大きいほど稼働するシミュレーション範囲が広がります。まず4で測定。</td></tr>
+<tr><td><code>max-players</code></td><td>正の整数</td><td>参加人数上限に応じて負荷が増えるため、運用規模に合わせる。</td></tr>
+<tr><td><code>max-threads</code></td><td>使用BDSの説明を確認</td><td>むやみに大きくせず、CPUと実測結果で判断。</td></tr>
+</tbody></table>
+<p>これらを変更しても、アドオンの重いスクリプト、レッドストーンクロック、Mob密集などによる遅延は解消しないことがあります。変更は一度に1項目ずつ、同条件で比較すると原因を切り分けやすくなります。</p></section>
+<section id="network"><h2>5. 接続できない場合の確認</h2>
+<ol><li>BDSが正常に起動しているか、コンソールにエラーがないか確認します。</li><li>同じLAN内から接続できるかを先に試します。</li><li>サーバーの接続先アドレスと使用ポートが一致しているか確認します。環境に応じてファイアウォールやルーター設定を確認します。</li><li><code>enable-lan-visibility=true</code>は、カスタムポートを指定しても既定ポートへバインドする場合があります。複数BDSを同一マシンで動かす際は競合に注意してください。</li><li>最近のBedrock更新後の接続エラーは、<a href="bedrock-nethernet-149.html">NetherNet移行・Error 149ガイド</a>も確認してください。</li></ol>
+<p>認証や通信に関する設定を無効化して回避するより、バージョンとネットワーク構成の整合性を確認する方が安全です。</p></section>
+<section id="permissions"><h2>6. allowlist.json・permissions.jsonを混同しない</h2>
+<p><code>server.properties</code>の<code>allow-list</code>は「参加できる人を制限するか」の切り替えです。一方、<code>allowlist.json</code>は参加を許可する人の一覧です。</p>
+<p><code>permissions.json</code>は各プレイヤーの権限指定に使う別ファイルです。参加許可と操作権限は別の問題なので、「参加できる」だけのユーザーにoperator権限を与えないようにしてください。XUIDなどの識別子は現在のBDSと公式資料を確認したうえで扱い、未確認の推測値を自動入力しないことが重要です。</p></section>
+<section id="pitfalls"><h2>7. よくある失敗と解決の順番</h2>
+<h3>設定を変えたのに反映されない</h3><p>BDSを完全に停止してから編集・再起動したかを確認します。ワールド生成時の設定が既存ワールドへ適用されない場合もあります。</p>
+<h3>友達が誰でも参加できる</h3><p><code>allow-list</code>の値と<code>allowlist.json</code>の登録内容を確認します。設定ファイルの配置先を取り違えていないかも確認してください。</p>
+<h3>同じPCでBDSを二つ起動するとエラーになる</h3><p>使用ポートの重複や<code>enable-lan-visibility</code>の挙動を確認します。専用のポートを設定しても既定ポートとの競合が起きる場合があります。</p>
+<h3>公開IPや秘密情報を人に見せてしまった</h3><p>ログや設定ファイルを相談時に共有する前に、IPアドレス、トークン、パスワード、個人情報を取り除いてください。</p></section>
+<section id="support"><h2>8. 設定ツール・専門サポート・公式資料</h2>
+<p>自分で編集する場合は無料ツールを使えます。サーバー固有の起動失敗・移行エラー・不具合調査が必要なら、範囲と支払い条件を合意したうえで有料での対応も可能です。相談だけで課金されることはありません。</p>
+<a class="cta" href="../tools/bedrock-properties.html">無料BDS設定ツール</a>
+<a class="cta secondary" href="../fixed-price-services.html">BDS設定診断（$29）を相談</a>
+<p class="small">参考資料：<a href="https://learn.microsoft.com/en-us/minecraft/creator/documents/bedrockserver/server-properties?view=minecraft-bedrock-stable" target="_blank" rel="noopener noreferrer">Microsoft Learn / Bedrock Dedicated Server Properties</a>。本サイトはMojang Studios・Microsoftとは無関係の独立した解説です。実際の仕様はバージョンによって変わるため、BDS同梱設定・公式案内を優先してください。</p></section>
+</article></main>
+<footer><div class="footer-inner">© 2026 rometet · <a href="../index.html">ホーム</a> · <a href="../fixed-price-services.html">お問い合わせ</a>　｜　非公式のMinecraft Bedrock運用ガイド</div></footer>
+</body></html>
